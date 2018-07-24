@@ -43,12 +43,12 @@ NBA.com provides the statistics for NBA rookie draft every year, but it is visib
 
 First, click on the view tab, then Developer, and Developer Tools on your browser
 
-![](~/stat133/stat133-hws-fall17/post02/images/cap1.png){ width=50% }
+![](~/previous-projects/R-projects/nbadraft_visualization/images/cap1.png){ width=50% }
 
 Second, look at the right half of the screen and click the Network tab, then XHR tab right underneath it.  
   
 
-![](~/stat133/stat133-hws-fall17/post02/images/cap2.png){ width=50% }  
+![](~/previous-projects/R-projects/nbadraft_visualization/images/cap2.png){ width=50% }  
 
   
 If you already had your target page open, it may not show anything under the tabs after you click them. **Don't worry**, you just need to hit **refresh page**.
@@ -58,13 +58,13 @@ If you already had your target page open, it may not show anything under the tab
 When you hit the refresh page, the page now should look something like this.  
 
 
-![](~/stat133/stat133-hws-fall17/post02/images/cap3.png){ width=50% }  
+![](~/previous-projects/R-projects/nbadraft_visualization/images/cap3.png){ width=50% }  
   
   
 In our case, you'll see that there are four different "objects" listed. One of those is likely to be the object with all the data stored. If you click on these objects, you'll learn that it opens new tabs, like ones in the diagram below.  
   
   
-![](~/stat133/stat133-hws-fall17/post02/images/cap4.png){ width=50% }  
+![](~/previous-projects/R-projects/nbadraft_visualization/images/cap4.png){ width=50% }  
   
   
 Use the preview tab to see what is inside the object. The data you'll be looking for will have a lot of information stored similar to what you see in the API (i.e. objects like **Year**, **Player Names** such as **Lonzo Ball**). Therefore, it is important that you make the comparison between preview tab and original page's data.  
@@ -73,7 +73,7 @@ Use the preview tab to see what is inside the object. The data you'll be looking
 Through trial & error, you can find that the 2nd object labeled "drafthistory" is the one storing all the data. You may be asking: how do I know this?  
   
   
-![](~/stat133/stat133-hws-fall17/post02/images/cap5.png){ width=50% }
+![](~/previous-projects/R-projects/nbadraft_visualization/images/cap5.png){ width=50% }
   
   
 You can see that with the *drafthistory* object, a lot of the data in the **rowSet** part resembles what we see in the website's API. Therefore, it is highly likely that *drafthistory* object is the one we should be using to import the data into our post. 
@@ -82,7 +82,7 @@ You can see that with the *drafthistory* object, a lot of the data in the **rowS
 Now, we need to get the URL for this object that we can then use with `rjson` feature to import into R. We can find this in the tab next to *Preview*, at *Headers*. 
   
   
-![](~/stat133/stat133-hws-fall17/post02/images/cap6.png){ width=50% }
+![](~/previous-projects/R-projects/nbadraft_visualization/images/cap6.png){ width=50% }
   
 
 ## 4. Data processing and presenting
@@ -133,11 +133,11 @@ print(gvisSankey(data, from="ORGANIZATION", to="FULLTEAM", weight="count",
 
 You can specifically click on the categories, to see the distribution of the players to the selected teams (for the case of this html file you're reading, you cannot. But if you make the googleVis sankey yourself, you will be able to). For example:
 
-![](~/stat133/stat133-hws-fall17/post02/images/cap7.png){ width=50% }
+![](~/previous-projects/R-projects/nbadraft_visualization/images/cap7.png){ width=50% }
 
 In the above, we selected Cal as the organization, and we see that two players from Cal were drafted into the NBA in this year's draft, with one going to Orlando Magic and another going to Boston Celtics. Now, let's see how many players the Philadelphia 76ers have drafted this season. 
 
-![](~/stat133/stat133-hws-fall17/post02/images/cap8.png){ width=50% }
+![](~/previous-projects/R-projects/nbadraft_visualization/images/cap8.png){ width=50% }
 
 We can see that 5 players were drafted into the 76ers, which is an unusually high number. However, this makes sense as 76ers are known to be rebuilding their team around young players in the recent years. 
 

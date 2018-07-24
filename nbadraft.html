@@ -151,35 +151,35 @@ library(sqldf)</code></pre>
 <p>The picture above was the picture taken after the 2017 NBA draft, with the chief NBA commissioner <a href="https://en.wikipedia.org/wiki/Adam_Silver">Adam Silver</a> and the rookies drafted. NBA.com provides the statistics for NBA rookie draft every year, but it is visible through their API. This requires us to first find the <strong>json</strong> format of the statistics, then use <code>rjson</code> package to import the data into R. I will explain this through screenshots and instructions. For your information, my browser is Google Chrome.</p>
 <p>First, click on the view tab, then Developer, and Developer Tools on your browser</p>
 <div class="figure">
-<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap1.png" style="width:50.0%" />
+<img src="images/cap1.png" style="width:50.0%" />
 
 </div>
 <p>Second, look at the right half of the screen and click the Network tab, then XHR tab right underneath it.</p>
 <div class="figure">
-<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap2.png" style="width:50.0%" />
+<img src="images/cap2.png" style="width:50.0%" />
 
 </div>
 <p>If you already had your target page open, it may not show anything under the tabs after you click them. <strong>Don’t worry</strong>, you just need to hit <strong>refresh page</strong>.</p>
 <p>When you hit the refresh page, the page now should look something like this.</p>
 <div class="figure">
-<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap3.png" style="width:50.0%" />
+<img src="images/cap3.png" style="width:50.0%" />
 
 </div>
 <p>In our case, you’ll see that there are four different “objects” listed. One of those is likely to be the object with all the data stored. If you click on these objects, you’ll learn that it opens new tabs, like ones in the diagram below.</p>
 <div class="figure">
-<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap4.png" style="width:50.0%" />
+<img src="images/cap4.png" style="width:50.0%" />
 
 </div>
 <p>Use the preview tab to see what is inside the object. The data you’ll be looking for will have a lot of information stored similar to what you see in the API (i.e. objects like <strong>Year</strong>, <strong>Player Names</strong> such as <strong>Lonzo Ball</strong>). Therefore, it is important that you make the comparison between preview tab and original page’s data.</p>
 <p>Through trial &amp; error, you can find that the 2nd object labeled “drafthistory” is the one storing all the data. You may be asking: how do I know this?</p>
 <div class="figure">
-<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap5.png" style="width:50.0%" />
+<img src="images/cap5.png" style="width:50.0%" />
 
 </div>
 <p>You can see that with the <em>drafthistory</em> object, a lot of the data in the <strong>rowSet</strong> part resembles what we see in the website’s API. Therefore, it is highly likely that <em>drafthistory</em> object is the one we should be using to import the data into our post.</p>
 <p>Now, we need to get the URL for this object that we can then use with <code>rjson</code> feature to import into R. We can find this in the tab next to <em>Preview</em>, at <em>Headers</em>.</p>
 <div class="figure">
-<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap6.png" style="width:50.0%" />
+<img src="images/cap6.png" style="width:50.0%" />
 
 </div>
 </div>
@@ -222,12 +222,12 @@ print(gvisSankey(data, from=&quot;ORGANIZATION&quot;, to=&quot;FULLTEAM&quot;, w
    }&quot;)
   ), &#39;chart&#39;)</code></pre>
 <!-- Sankey generated in R 3.4.2 by googleVis 0.6.2 package -->
-<!-- Mon Mar 26 03:35:05 2018 -->
+<!-- Tue Jul 24 11:40:18 2018 -->
 <!-- jsHeader -->
 <script type="text/javascript">
  
 // jsData 
-function gvisDataSankeyID24693a521abe () {
+function gvisDataSankeyID299050c0b818 () {
 var data = new google.visualization.DataTable();
 var datajson =
 [
@@ -535,8 +535,8 @@ return(data);
 }
  
 // jsDrawChart
-function drawChartSankeyID24693a521abe() {
-var data = gvisDataSankeyID24693a521abe();
+function drawChartSankeyID299050c0b818() {
+var data = gvisDataSankeyID299050c0b818();
 var options = {};
 options["width"] = 850;
 options["height"] = 800;
@@ -546,7 +546,7 @@ options["sankey"] = {
    };
 
     var chart = new google.visualization.Sankey(
-    document.getElementById('SankeyID24693a521abe')
+    document.getElementById('SankeyID299050c0b818')
     );
     chart.draw(data,options);
     
@@ -570,9 +570,9 @@ if (newPackage)
   pkgs.push(chartid);
   
 // Add the drawChart function to the global list of callbacks
-callbacks.push(drawChartSankeyID24693a521abe);
+callbacks.push(drawChartSankeyID299050c0b818);
 })();
-function displayChartSankeyID24693a521abe() {
+function displayChartSankeyID299050c0b818() {
   var pkgs = window.__gvisPackages = window.__gvisPackages || [];
   var callbacks = window.__gvisCallbacks = window.__gvisCallbacks || [];
   window.clearTimeout(window.__gvisLoad);
@@ -595,19 +595,19 @@ callbacks.shift()();
 // jsFooter
 </script>
 <!-- jsChart -->
-<script type="text/javascript" src="https://www.google.com/jsapi?callback=displayChartSankeyID24693a521abe"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi?callback=displayChartSankeyID299050c0b818"></script>
 <!-- divChart -->
-<div id="SankeyID24693a521abe" style="width: 850; height: 800;">
+<div id="SankeyID299050c0b818" style="width: 850; height: 800;">
 
 </div>
 <p>You can specifically click on the categories, to see the distribution of the players to the selected teams (for the case of this html file you’re reading, you cannot. But if you make the googleVis sankey yourself, you will be able to). For example:</p>
 <div class="figure">
-<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap7.png" style="width:50.0%" />
+<img src="images/cap7.png" style="width:50.0%" />
 
 </div>
 <p>In the above, we selected Cal as the organization, and we see that two players from Cal were drafted into the NBA in this year’s draft, with one going to Orlando Magic and another going to Boston Celtics. Now, let’s see how many players the Philadelphia 76ers have drafted this season.</p>
 <div class="figure">
-<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap8.png" style="width:50.0%" />
+<img src="images/cap8.png" style="width:50.0%" />
 
 </div>
 <p>We can see that 5 players were drafted into the 76ers, which is an unusually high number. However, this makes sense as 76ers are known to be rebuilding their team around young players in the recent years.</p>
