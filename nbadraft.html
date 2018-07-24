@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Yoon Sung Hong" />
+
+<meta name="date" content="2017-11-18" />
+
+<title>NBA draft report, with googleVis</title>
+
+<script src="nbadraft_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="nbadraft_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="nbadraft_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="nbadraft_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="nbadraft_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="nbadraft_files/navigation-1.1/tabsets.js"></script>
+<link href="nbadraft_files/highlightjs-1.1/default.css" rel="stylesheet" />
+<script src="nbadraft_files/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">NBA draft report, with googleVis</h1>
+<h4 class="author"><em>Yoon Sung Hong</em></h4>
+<h4 class="date"><em>11/18/2017</em></h4>
+
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>1. Introduction</h2>
+<p>This project aims to elaborate on, in particular, the visual representation part. For example, we want to be able to see how the data extracted applies in a more relatable form for everyone; if you’re someone who doesn’t understand R, but wants to know about the proportion of rookies drafted into the NBA from Cal, it would be easier for you to learn about this through a more diagrammatic report. By the end of the post, we want to be able to present advanced data in a more tangible and complex ways and analyze the visualized data accordingly, in particular using the package <code>googleVis</code>. Further, we should be able to utilize some aspects of packages such as <code>rjson</code> and <code>RCurl</code>.</p>
+<p>You may be asking, <em>why is this important</em>? Think from a strategic standpoint. First and foremost, it is easier to <strong>visualize and strategize data in a relatable manner</strong>; often, we want to get people to understand the trend with data, and this requires a language that is more relatable to them, which in this case is visual representation. Second, we will learn how to extract data from online sources when neat csv files are not made available. <code>rjson</code> package will allow us to retrieve such data, in particular those in JSON format.</p>
+</div>
+<div id="background-knowledge" class="section level2">
+<h2>2. Background knowledge</h2>
+<p><code>googleVis</code> is a package that brings in Google Charts API, allowing one to make interactive charts similar to <code>ggVis</code>. <code>rjson</code> is a package that allows one to bring in JSON (JavaScript Object Notation) objects into R objects. This will be the package we will be utilizing to <em>import data from NBA’s API</em>, as they do not <em>directly offer any prepared data files</em>.</p>
+<p>I will be using mostly data related to NBA (basketball). For those who may not watch basketball every day, some of these concepts we discuss in this post may come across as strange to you. Thus, before we go further with the post, I will explain some of the concepts that may seem confusing later in the post.</p>
+<p>We will be considering the 2017 NBA drafts dataset when learning to use <code>rjson</code> package and <code>googleVis</code> package. The NBA drafts happen annually, to bring new faces into the league with hopes of developing them into the next Michael Jordan’s and Lebron James’s. There are in total 30 teams in the NBA, and fundamentally, <strong>each of the teams walks out with 2 players each year at the draft</strong>; 1 in the first round and 1 in the second round. However, teams can include these draft picks (for future seasons) for trade with other teams so some teams may end up with other teams’ draft picks, ending up drafting more than 2 or less than 2 rookies. These players are drafted from high school, college, and European leagues.</p>
+</div>
+<div id="preparation" class="section level2">
+<h2>3. Preparation</h2>
+<div id="loading-packages" class="section level4">
+<h4>3.1. Loading packages</h4>
+<p>We will first load <code>googleVis</code>, <code>rjson</code>, <code>sqldf</code>, and <code>dplyr</code> as packages to help us.</p>
+<pre class="r"><code>library(googleVis)
+library(rjson)
+library(dplyr)
+library(sqldf)</code></pre>
+</div>
+<div id="fetching-the-data" class="section level4">
+<h4>3.2. Fetching the data</h4>
+<p>We will only be considering the 2017 NBA draft, where nationally known players such as <em>Lonzo Ball</em> were drafted. <img src="http://images.performgroup.com/di/library/sporting_news/ed/41/nba-draft-2017-ftr-062317jpg_pflanj8jvxqg1pf0d4ws1qjsr.jpg?t=-741473956" style="width:50.0%" /></p>
+<p>The picture above was the picture taken after the 2017 NBA draft, with the chief NBA commissioner <a href="https://en.wikipedia.org/wiki/Adam_Silver">Adam Silver</a> and the rookies drafted. NBA.com provides the statistics for NBA rookie draft every year, but it is visible through their API. This requires us to first find the <strong>json</strong> format of the statistics, then use <code>rjson</code> package to import the data into R. I will explain this through screenshots and instructions. For your information, my browser is Google Chrome.</p>
+<p>First, click on the view tab, then Developer, and Developer Tools on your browser</p>
+<div class="figure">
+<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap1.png" style="width:50.0%" />
+
+</div>
+<p>Second, look at the right half of the screen and click the Network tab, then XHR tab right underneath it.</p>
+<div class="figure">
+<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap2.png" style="width:50.0%" />
+
+</div>
+<p>If you already had your target page open, it may not show anything under the tabs after you click them. <strong>Don’t worry</strong>, you just need to hit <strong>refresh page</strong>.</p>
+<p>When you hit the refresh page, the page now should look something like this.</p>
+<div class="figure">
+<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap3.png" style="width:50.0%" />
+
+</div>
+<p>In our case, you’ll see that there are four different “objects” listed. One of those is likely to be the object with all the data stored. If you click on these objects, you’ll learn that it opens new tabs, like ones in the diagram below.</p>
+<div class="figure">
+<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap4.png" style="width:50.0%" />
+
+</div>
+<p>Use the preview tab to see what is inside the object. The data you’ll be looking for will have a lot of information stored similar to what you see in the API (i.e. objects like <strong>Year</strong>, <strong>Player Names</strong> such as <strong>Lonzo Ball</strong>). Therefore, it is important that you make the comparison between preview tab and original page’s data.</p>
+<p>Through trial &amp; error, you can find that the 2nd object labeled “drafthistory” is the one storing all the data. You may be asking: how do I know this?</p>
+<div class="figure">
+<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap5.png" style="width:50.0%" />
+
+</div>
+<p>You can see that with the <em>drafthistory</em> object, a lot of the data in the <strong>rowSet</strong> part resembles what we see in the website’s API. Therefore, it is highly likely that <em>drafthistory</em> object is the one we should be using to import the data into our post.</p>
+<p>Now, we need to get the URL for this object that we can then use with <code>rjson</code> feature to import into R. We can find this in the tab next to <em>Preview</em>, at <em>Headers</em>.</p>
+<div class="figure">
+<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap6.png" style="width:50.0%" />
+
+</div>
+</div>
+</div>
+<div id="data-processing-and-presenting" class="section level2">
+<h2>4. Data processing and presenting</h2>
+<div id="importing-and-cleaning-the-data" class="section level4">
+<h4>4.1. Importing and cleaning the data</h4>
+<p>Now, using the url, we can import the data with <code>fromJSON</code> function in <code>rjson</code> package. Let’s first create an object for the URL, then import the JSON data. Note that the imported data will be in a list format. The imported data will then be in a form of a list, with list inside a list. In the list of the list, 2nd component is the data collected and 3rd component is the names of the columns. This will make more sense in the code chunk presented.</p>
+<pre class="r"><code>#2017 Drafting data
+URL &lt;- paste(&quot;https://stats.nba.com/stats/drafthistory&quot;,
+             &quot;?College=&amp;LeagueID=00&amp;Overall&quot;,
+&quot;Pick=&amp;RoundNum=&amp;RoundPick=&amp;Season=2017&amp;TeamID=0&amp;TopX=&quot;,
+sep = &quot;&quot;)
+dat &lt;- fromJSON(file = URL, method = &quot;C&quot;)
+rook &lt;- data.frame(matrix(unlist(dat$resultSets[[1]][[3]]),
+                          ncol = 12, 
+                          byrow = TRUE))
+colnames(rook) &lt;- dat$resultSets[[1]][[2]]</code></pre>
+<p>Let’s use <code>dplyr</code> to arrange the data so that it can be oragnized to be used for the Sankey diagram. To do this, <strong>data must be grouped and aggregated in terms of the number of people that each university has sent to different teams</strong>, since some teams sent more than one player to a team (for example, Los Angeles Lakers drafted 2 rookies from UCLA). You can see the code chunk below to see what I mean.</p>
+<pre class="r"><code>rook$FULLTEAM &lt;- rep(0, nrow(rook))
+for(i in 1:nrow(rook)) {
+  rook$FULLTEAM[i] &lt;- paste(rook$TEAM_CITY[i], rook$TEAM_NAME[i], sep = &quot; &quot;)
+}
+rook$COUNT &lt;- rep(1, nrow(rook))
+data &lt;- rook %&gt;% 
+  select(FULLTEAM, ORGANIZATION_TYPE, ORGANIZATION, COUNT) %&gt;%
+  group_by(ORGANIZATION,FULLTEAM) %&gt;%
+  summarise(count = sum(COUNT))</code></pre>
+</div>
+<div id="sankey-diagram" class="section level4">
+<h4>4.2. Sankey Diagram</h4>
+<p>Now that the data is ready, let’s try using the <code>googleVis</code> and its Sankey diagram feature through <code>gvisSankey</code> function. <strong>from</strong> part of the function should be the university/institute rookie is from, and <strong>to</strong> part of the function should be the team that the rookie was drafted into. It will be weighed by the aggregate numbers we got from above to show the difference in numbers when necessary. I also added some color, opacity, and resizing formats in the function. <strong>Note that I am using print function to make sure that the gvisSankey is displayed in the same html document, not as a separate pop up.</strong></p>
+<pre class="r"><code># Sankey diagram using googleVis
+print(gvisSankey(data, from=&quot;ORGANIZATION&quot;, to=&quot;FULLTEAM&quot;, weight=&quot;count&quot;,
+    options=list(height=800, width=850,
+    sankey=&quot;{
+     link:{color:{fill: &#39;lightgray&#39;, fillOpacity: 0.7}},
+     node:{nodePadding: 5, label:{fontSize: 12}, interactivity: true, width: 20},
+   }&quot;)
+  ), &#39;chart&#39;)</code></pre>
+<!-- Sankey generated in R 3.4.2 by googleVis 0.6.2 package -->
+<!-- Mon Mar 26 03:35:05 2018 -->
+<!-- jsHeader -->
+<script type="text/javascript">
+ 
+// jsData 
+function gvisDataSankeyID24693a521abe () {
+var data = new google.visualization.DataTable();
+var datajson =
+[
+ [
+"Adelaide 36ers (Australia)",
+"Oklahoma City Thunder",
+1
+],
+[
+"Arizona",
+"Boston Celtics",
+1
+],
+[
+"Arizona",
+"Minnesota Timberwolves",
+1
+],
+[
+"BC Zalgiris (Lithuania)",
+"Houston Rockets",
+1
+],
+[
+"California",
+"Boston Celtics",
+1
+],
+[
+"California",
+"Orlando Magic",
+1
+],
+[
+"California-Los Angeles",
+"Indiana Pacers",
+2
+],
+[
+"California-Los Angeles",
+"Los Angeles Lakers",
+1
+],
+[
+"CB Gran Canaria (Spain)",
+"Orlando Magic",
+1
+],
+[
+"Clemson",
+"San Antonio Spurs",
+1
+],
+[
+"Colorado",
+"San Antonio Spurs",
+1
+],
+[
+"Creighton",
+"Chicago Bulls",
+1
+],
+[
+"Duke",
+"Boston Celtics",
+1
+],
+[
+"Duke",
+"Charlotte Hornets",
+1
+],
+[
+"Duke",
+"Detroit Pistons",
+1
+],
+[
+"Duke",
+"Portland Trail Blazers",
+1
+],
+[
+"FC Barcelona Basquet (Spain)",
+"Brooklyn Nets",
+1
+],
+[
+"Florida State",
+"New Orleans Pelicans",
+1
+],
+[
+"Florida State",
+"Orlando Magic",
+1
+],
+[
+"Gonzaga",
+"Sacramento Kings",
+1
+],
+[
+"Gonzaga",
+"Utah Jazz",
+1
+],
+[
+"Houston",
+"New York Knicks",
+1
+],
+[
+"Indiana",
+"Toronto Raptors",
+1
+],
+[
+"Indiana",
+"Utah Jazz",
+1
+],
+[
+"Iowa State",
+"Denver Nuggets",
+1
+],
+[
+"Kansas",
+"Phoenix Suns",
+1
+],
+[
+"Kansas",
+"Sacramento Kings",
+1
+],
+[
+"Kansas State",
+"Orlando Magic",
+1
+],
+[
+"Kentucky",
+"Charlotte Hornets",
+1
+],
+[
+"Kentucky",
+"Miami Heat",
+1
+],
+[
+"Kentucky",
+"Sacramento Kings",
+1
+],
+[
+"KK Mega Leks (Serbia)",
+"Atlanta Hawks",
+1
+],
+[
+"KK Mega Leks (Serbia)",
+"Denver Nuggets",
+1
+],
+[
+"KK Mega Leks (Serbia)",
+"New York Knicks",
+1
+],
+[
+"Louisville",
+"Denver Nuggets",
+1
+],
+[
+"Miami (FL)",
+"Phoenix Suns",
+1
+],
+[
+"Michigan",
+"Milwaukee Bucks",
+1
+],
+[
+"Nanterre 92 (France)",
+"Philadelphia 76ers",
+1
+],
+[
+"North Carolina",
+"Los Angeles Lakers",
+1
+],
+[
+"North Carolina",
+"Portland Trail Blazers",
+1
+],
+[
+"North Carolina State",
+"Dallas Mavericks",
+1
+],
+[
+"Oklahoma State",
+"Philadelphia 76ers",
+1
+],
+[
+"Oregon",
+"Atlanta Hawks",
+1
+],
+[
+"Oregon",
+"Chicago Bulls",
+1
+],
+[
+"Oregon",
+"Houston Rockets",
+1
+],
+[
+"Purdue",
+"Portland Trail Blazers",
+1
+],
+[
+"Red Star Belgrade (Serbia)",
+"Philadelphia 76ers",
+1
+],
+[
+"SIG Strasbourg (France)",
+"New York Knicks",
+1
+],
+[
+"South Carolina",
+"Milwaukee Bucks",
+1
+],
+[
+"Southern Methodist",
+"Boston Celtics",
+1
+],
+[
+"Southern Methodist",
+"Philadelphia 76ers",
+1
+],
+[
+"Syracuse",
+"Utah Jazz",
+1
+],
+[
+"Texas",
+"Brooklyn Nets",
+1
+],
+[
+"Utah",
+"Brooklyn Nets",
+1
+],
+[
+"Valparaiso",
+"Phoenix Suns",
+1
+],
+[
+"Villanova",
+"Utah Jazz",
+1
+],
+[
+"Wake Forest",
+"Atlanta Hawks",
+1
+],
+[
+"Washington",
+"Philadelphia 76ers",
+1
+],
+[
+"Xavier",
+"New Orleans Pelicans",
+1
+] 
+];
+data.addColumn('string','ORGANIZATION');
+data.addColumn('string','FULLTEAM');
+data.addColumn('number','count');
+data.addRows(datajson);
+return(data);
+}
+ 
+// jsDrawChart
+function drawChartSankeyID24693a521abe() {
+var data = gvisDataSankeyID24693a521abe();
+var options = {};
+options["width"] = 850;
+options["height"] = 800;
+options["sankey"] = {
+     link:{color:{fill: 'lightgray', fillOpacity: 0.7}},
+     node:{nodePadding: 5, label:{fontSize: 12}, interactivity: true, width: 20},
+   };
+
+    var chart = new google.visualization.Sankey(
+    document.getElementById('SankeyID24693a521abe')
+    );
+    chart.draw(data,options);
+    
+
+}
+  
+ 
+// jsDisplayChart
+(function() {
+var pkgs = window.__gvisPackages = window.__gvisPackages || [];
+var callbacks = window.__gvisCallbacks = window.__gvisCallbacks || [];
+var chartid = "sankey";
+  
+// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)
+var i, newPackage = true;
+for (i = 0; newPackage && i < pkgs.length; i++) {
+if (pkgs[i] === chartid)
+newPackage = false;
+}
+if (newPackage)
+  pkgs.push(chartid);
+  
+// Add the drawChart function to the global list of callbacks
+callbacks.push(drawChartSankeyID24693a521abe);
+})();
+function displayChartSankeyID24693a521abe() {
+  var pkgs = window.__gvisPackages = window.__gvisPackages || [];
+  var callbacks = window.__gvisCallbacks = window.__gvisCallbacks || [];
+  window.clearTimeout(window.__gvisLoad);
+  // The timeout is set to 100 because otherwise the container div we are
+  // targeting might not be part of the document yet
+  window.__gvisLoad = setTimeout(function() {
+  var pkgCount = pkgs.length;
+  google.load("visualization", "1", { packages:pkgs, callback: function() {
+  if (pkgCount != pkgs.length) {
+  // Race condition where another setTimeout call snuck in after us; if
+  // that call added a package, we must not shift its callback
+  return;
+}
+while (callbacks.length > 0)
+callbacks.shift()();
+} });
+}, 100);
+}
+ 
+// jsFooter
+</script>
+<!-- jsChart -->
+<script type="text/javascript" src="https://www.google.com/jsapi?callback=displayChartSankeyID24693a521abe"></script>
+<!-- divChart -->
+<div id="SankeyID24693a521abe" style="width: 850; height: 800;">
+
+</div>
+<p>You can specifically click on the categories, to see the distribution of the players to the selected teams (for the case of this html file you’re reading, you cannot. But if you make the googleVis sankey yourself, you will be able to). For example:</p>
+<div class="figure">
+<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap7.png" style="width:50.0%" />
+
+</div>
+<p>In the above, we selected Cal as the organization, and we see that two players from Cal were drafted into the NBA in this year’s draft, with one going to Orlando Magic and another going to Boston Celtics. Now, let’s see how many players the Philadelphia 76ers have drafted this season.</p>
+<div class="figure">
+<img src="/Users/yoonsunghong/stat133/stat133-hws-fall17/post02/images/cap8.png" style="width:50.0%" />
+
+</div>
+<p>We can see that 5 players were drafted into the 76ers, which is an unusually high number. However, this makes sense as 76ers are known to be rebuilding their team around young players in the recent years.</p>
+</div>
+</div>
+<div id="conclusion" class="section level2">
+<h2>5. Conclusion</h2>
+<p>It is clear that there is no right or wrong way to present the data visually. googleVis and its diverse features offer different ways to quantify and visually present the data. I think through this post, it was realizable that it is important to try to present different forms of graphs and compare them to see which ones apply best to the given data set. I am certain that different cases with different data frames offer alternate graphical solutions that work best for the analysis; if the purpose of the analysis was to see the different colleges sending their rookies to NBA every season, a Sankey diagram would be more ideal than a scatterplot. Therefore, a case-by-case representation of diagrams would be necessary.</p>
+<p>In terms of rjson package, it shows and proves that there are many sources where data can be scraped, particularly using the API’s set up on the websites.</p>
+<p>In terms of the analysis itself relating to NBA rookie draft, it seems to be that same/similar list of colleges send their students to the NBA as rookies every year. In other words, it seems to be that basketball-prestigious colleges always seem to send some players to the NBA every year. This is likely because talented high school basketball players tend to choose their colleges based on their reputations in relation to basketball, creating a cycle between incoming athletes and sustained reputation of these colleges.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
